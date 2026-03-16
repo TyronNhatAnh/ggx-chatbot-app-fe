@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #111214;
+  --foreground: #f5f5f5;
 }
 
 @theme inline {
@@ -12,17 +12,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
 }
 
 @keyframes typing-bounce {
@@ -43,7 +42,7 @@ body {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 9999px;
-  background: #52525b;
+  background: #d4d4d8;
   animation: typing-bounce 1.4s infinite ease-in-out;
 }
 

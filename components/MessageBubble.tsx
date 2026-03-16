@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -16,24 +20,56 @@ export function MessageBubble({
   isTyping = false,
 }: MessageBubbleProps) {
   const isUser = role === "user";
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setCopied(false);
+    }, 1600);
+
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+
+  async function handleCopyMessage() {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   return (
     <div
       className={[
-        "message-enter flex w-full",
+        "message-enter group flex w-full",
         isUser ? "justify-end" : "justify-start",
       ].join(" ")}
     >
       <div
         className={[
-          "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm",
+          "relative max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm md:max-w-[78%]",
           isUser
-            ? "bg-zinc-900 text-white"
+            ? "bg-[#2b2d31] text-zinc-100"
             : isTyping
-              ? "border border-zinc-200/80 bg-gradient-to-br from-zinc-50 to-white text-zinc-700 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
-              : "bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200",
+              ? "border border-white/10 bg-gradient-to-br from-[#202127] to-[#17181c] text-zinc-300 shadow-[0_12px_30px_rgba(0,0,0,0.25)]"
+              : "border border-white/8 bg-[#1f2026] text-zinc-200",
         ].join(" ")}
       >
+        {!isUser && !isTyping ? (
+          <button
+            type="button"
+            onClick={handleCopyMessage}
+            className="absolute right-3 top-3 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-zinc-400 opacity-100 transition-all hover:bg-white/[0.08] hover:text-zinc-100 md:opacity-0 md:group-hover:opacity-100"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        ) : null}
+
         {isTyping ? (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -41,7 +77,7 @@ export function MessageBubble({
               <span className="typing-dot" />
               <span className="typing-dot" />
             </div>
-            <span className="text-sm font-medium text-zinc-500">
+            <span className="text-sm font-medium text-zinc-400">
               AI is thinking...
             </span>
           </div>
@@ -52,22 +88,22 @@ export function MessageBubble({
         ) : null}
 
         {!isTyping && !isUser ? (
-          <div className="markdown-body break-words text-[15px] leading-7">
+          <div className="markdown-body break-words pr-14 text-[15px] leading-7 text-zinc-200">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children }) => (
-                  <h1 className="mb-4 text-xl font-semibold tracking-tight text-zinc-950 last:mb-0">
+                  <h1 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50 last:mb-0">
                     {children}
                   </h1>
                 ),
                 h2: ({ children }) => (
-                  <h2 className="mb-3 text-lg font-semibold tracking-tight text-zinc-950 last:mb-0">
+                  <h2 className="mb-3 text-lg font-semibold tracking-tight text-zinc-100 last:mb-0">
                     {children}
                   </h2>
                 ),
                 h3: ({ children }) => (
-                  <h3 className="mb-2 text-base font-semibold text-zinc-900 last:mb-0">
+                  <h3 className="mb-2 text-base font-semibold text-zinc-100 last:mb-0">
                     {children}
                   </h3>
                 ),
@@ -86,14 +122,14 @@ export function MessageBubble({
                 ),
                 li: ({ children }) => <li className="pl-1">{children}</li>,
                 strong: ({ children }) => (
-                  <strong className="font-semibold text-zinc-950">
+                  <strong className="font-semibold text-zinc-50">
                     {children}
                   </strong>
                 ),
                 a: ({ children, href }) => (
                   <a
                     href={href}
-                    className="font-medium text-zinc-900 underline underline-offset-2"
+                    className="font-medium text-zinc-200 underline decoration-zinc-500 underline-offset-4"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -101,32 +137,32 @@ export function MessageBubble({
                   </a>
                 ),
                 blockquote: ({ children }) => (
-                  <blockquote className="mb-4 border-l-4 border-zinc-300 bg-zinc-200/40 px-3 py-2 text-zinc-700 italic last:mb-0">
+                  <blockquote className="mb-4 border-l-4 border-zinc-600 bg-white/[0.04] px-3 py-2 text-zinc-300 italic last:mb-0">
                     {children}
                   </blockquote>
                 ),
                 table: ({ children }) => (
-                  <div className="mb-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.05)] last:mb-0">
+                  <div className="mb-4 overflow-x-auto rounded-2xl border border-white/10 bg-[#16171b] shadow-[0_8px_20px_rgba(0,0,0,0.22)] last:mb-0">
                     <table className="min-w-full border-collapse text-left text-sm">
                       {children}
                     </table>
                   </div>
                 ),
                 thead: ({ children }) => (
-                  <thead className="bg-zinc-100">{children}</thead>
+                  <thead className="bg-white/[0.04]">{children}</thead>
                 ),
                 th: ({ children }) => (
-                  <th className="border-b border-zinc-200 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                  <th className="border-b border-white/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
                     {children}
                   </th>
                 ),
                 tbody: ({ children }) => (
-                  <tbody className="[&_tr:nth-child(even)]:bg-zinc-50">
+                  <tbody className="[&_tr:nth-child(even)]:bg-white/[0.025]">
                     {children}
                   </tbody>
                 ),
                 td: ({ children }) => (
-                  <td className="border-b border-zinc-100 px-4 py-2.5 align-top text-zinc-700 last:border-b-0">
+                  <td className="border-b border-white/8 px-4 py-2.5 align-top text-zinc-300 last:border-b-0">
                     {children}
                   </td>
                 ),
@@ -143,7 +179,7 @@ export function MessageBubble({
                   }
 
                   return (
-                    <code className="rounded-md border border-zinc-300 bg-zinc-200/80 px-1.5 py-0.5 font-mono text-[0.85em] text-zinc-900">
+                    <code className="rounded-md border border-white/10 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-zinc-100">
                       {codeText}
                     </code>
                   );

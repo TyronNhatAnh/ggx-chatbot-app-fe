@@ -117,42 +117,98 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex h-full min-h-[600px] w-full max-w-3xl flex-col rounded-3xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-2.5">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Session: {conversationId}
-        </p>
-        <button
-          type="button"
-          onClick={handleNewSession}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-        >
-          New session
-        </button>
-      </div>
+    <div className="flex h-screen w-full overflow-hidden bg-[#111214] text-zinc-100">
+      <aside className="hidden h-full w-72 shrink-0 flex-col border-r border-white/10 bg-[#17181c] md:flex">
+        <div className="border-b border-white/10 p-4">
+          <button
+            type="button"
+            onClick={handleNewSession}
+            className="flex w-full items-center justify-center rounded-xl border border-white/10 bg-[#2a2b31] px-4 py-3 text-sm font-medium text-zinc-100 transition-colors hover:bg-[#34353d]"
+          >
+            New session
+          </button>
+        </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl bg-white p-4">
-        {messages.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-            Start a conversation.
+        <div className="flex flex-1 flex-col justify-between p-4">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                AI Admin Assistant
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Dark chat workspace with one active session per URL.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                Active session
+              </p>
+              <p className="mt-2 break-all text-sm leading-6 text-zinc-300">
+                {conversationId}
+              </p>
+            </div>
           </div>
-        ) : (
-          messages.map((message, index) => (
-            <MessageBubble
-              key={`${message.role}-${index}`}
-              role={message.role}
-              content={message.content}
-            />
-          ))
-        )}
 
-        {loading ? <MessageBubble role="assistant" content="" isTyping /> : null}
+          <p className="text-xs leading-5 text-zinc-500">
+            Sidebar stays fixed. Only the chat thread scrolls.
+          </p>
+        </div>
+      </aside>
 
-        <div ref={messagesEndRef} />
-      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="border-b border-white/10 bg-[#111214]/95 px-4 py-4 backdrop-blur md:px-8">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight text-zinc-100 md:text-2xl">
+                AI Admin Assistant
+              </h1>
+              <p className="mt-1 text-sm text-zinc-400">
+                Ask questions, inspect context, and continue the conversation.
+              </p>
+            </div>
 
-      <div className="mt-4">
-        <ChatInput onSend={handleSend} />
+            <button
+              type="button"
+              onClick={handleNewSession}
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.08] md:hidden"
+            >
+              New
+            </button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-hidden px-4 py-4 md:px-8 md:py-6">
+          <div className="mx-auto flex h-full w-full max-w-4xl min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#18191d] shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8">
+              <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+                {messages.length === 0 ? (
+                  <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/[0.02] text-sm text-zinc-500">
+                    Start a conversation.
+                  </div>
+                ) : (
+                  messages.map((message, index) => (
+                    <MessageBubble
+                      key={`${message.role}-${index}`}
+                      role={message.role}
+                      content={message.content}
+                    />
+                  ))
+                )}
+
+                {loading ? <MessageBubble role="assistant" content="" isTyping /> : null}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 bg-[#18191d] px-4 py-4 md:px-6">
+              <div className="mx-auto w-full max-w-3xl">
+                <ChatInput onSend={handleSend} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
