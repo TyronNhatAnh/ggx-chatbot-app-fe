@@ -12,12 +12,20 @@ type MessageBubbleProps = {
   role: ChatMessage["role"];
   content: string;
   isTyping?: boolean;
+  showAssistantActions?: boolean;
+  showRegenerate?: boolean;
+  onRegenerate?: () => void;
+  canRegenerate?: boolean;
 };
 
 export function MessageBubble({
   role,
   content,
   isTyping = false,
+  showAssistantActions = false,
+  showRegenerate = false,
+  onRegenerate,
+  canRegenerate = false,
 }: MessageBubbleProps) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
@@ -46,13 +54,13 @@ export function MessageBubble({
   return (
     <div
       className={[
-        "message-enter group flex w-full",
+        "message-enter flex w-full",
         isUser ? "justify-end" : "justify-start",
       ].join(" ")}
     >
       <div
         className={[
-          "relative max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm md:max-w-[78%]",
+          "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm md:max-w-[78%]",
           isUser
             ? "bg-[#2b2d31] text-zinc-100"
             : isTyping
@@ -60,16 +68,6 @@ export function MessageBubble({
               : "border border-white/8 bg-[#1f2026] text-zinc-200",
         ].join(" ")}
       >
-        {!isUser && !isTyping ? (
-          <button
-            type="button"
-            onClick={handleCopyMessage}
-            className="absolute right-3 top-3 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-zinc-400 opacity-100 transition-all hover:bg-white/[0.08] hover:text-zinc-100 md:opacity-0 md:group-hover:opacity-100"
-          >
-            {copied ? "Copied" : "Copy"}
-          </button>
-        ) : null}
-
         {isTyping ? (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -88,7 +86,7 @@ export function MessageBubble({
         ) : null}
 
         {!isTyping && !isUser ? (
-          <div className="markdown-body break-words pr-14 text-[15px] leading-7 text-zinc-200">
+          <div className="markdown-body break-words text-[15px] leading-7 text-zinc-200">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -188,6 +186,29 @@ export function MessageBubble({
             >
               {content}
             </ReactMarkdown>
+
+            {showAssistantActions ? (
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                <button
+                  type="button"
+                  onClick={handleCopyMessage}
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100"
+                >
+                  {copied ? "Copied" : "Copy"}
+                </button>
+
+                {showRegenerate && onRegenerate ? (
+                  <button
+                    type="button"
+                    onClick={onRegenerate}
+                    disabled={!canRegenerate}
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Regenerate
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

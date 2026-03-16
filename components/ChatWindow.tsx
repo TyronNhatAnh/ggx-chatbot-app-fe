@@ -29,6 +29,7 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
     initialConversationId,
   );
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -113,12 +114,77 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
       return;
     }
 
+    setSidebarOpen(false);
     router.push(`/chat/${createConversationId()}`);
   }
 
-  return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#111214] text-zinc-100">
-      <aside className="hidden h-full w-72 shrink-0 flex-col border-r border-white/10 bg-[#17181c] md:flex">
+  function getLatestUserMessage() {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index].role === "user") {
+        return messages[index].content;
+      }
+    }
+
+    return null;
+  }
+
+  async function handleRegenerate() {
+    if (loading) {
+      return;
+    }
+
+    const latestUserMessage = getLatestUserMessage();
+
+    if (!latestUserMessage) {
+      return;
+    }
+
+    setMessages((currentMessages) => {
+      if (currentMessages.length === 0) {
+        return currentMessages;
+      }
+
+      const nextMessages = [...currentMessages];
+
+      if (nextMessages[nextMessages.length - 1]?.role === "assistant") {
+        nextMessages.pop();
+      }
+
+      return nextMessages;
+    });
+
+    setLoading(true);
+
+    try {
+      const response = await sendChatMessage(latestUserMessage, conversationId);
+      await streamAssistantReply(response.reply);
+      setConversationId(response.conversation_id);
+    } catch {
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          role: "assistant",
+          content: "Sorry, I couldn't regenerate the response. Please try again.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const latestAssistantIndex = messages.reduce<number>((lastIndex, message, index) => {
+    if (message.role === "assistant") {
+      return index;
+    }
+
+    return lastIndex;
+  }, -1);
+
+  const canRegenerate = !loading && messages.some((message) => message.role === "user");
+
+  function SidebarContent() {
+    return (
+      <>
         <div className="border-b border-white/10 p-4">
           <button
             type="button"
@@ -154,7 +220,38 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
             Sidebar stays fixed. Only the chat thread scrolls.
           </p>
         </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-[#111214] text-zinc-100">
+      <aside className="hidden h-full w-72 shrink-0 flex-col border-r border-white/10 bg-[#17181c] md:flex">
+        <SidebarContent />
       </aside>
+
+      {sidebarOpen ? (
+        <div className="fixed inset-0 z-40 flex md:hidden">
+          <button
+            type="button"
+            aria-label="Close sidebar"
+            onClick={() => setSidebarOpen(false)}
+            className="h-full flex-1 bg-black/55"
+          />
+          <aside className="flex h-full w-72 max-w-[85vw] flex-col border-l border-white/10 bg-[#17181c] shadow-2xl">
+            <div className="border-b border-white/10 p-4">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300"
+              >
+                Close
+              </button>
+            </div>
+            <SidebarContent />
+          </aside>
+        </div>
+      ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="border-b border-white/10 bg-[#111214]/95 px-4 py-4 backdrop-blur md:px-8">
@@ -170,10 +267,10 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
 
             <button
               type="button"
-              onClick={handleNewSession}
+              onClick={() => setSidebarOpen(true)}
               className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.08] md:hidden"
             >
-              New
+              Menu
             </button>
           </div>
         </div>
@@ -192,6 +289,10 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
                       key={`${message.role}-${index}`}
                       role={message.role}
                       content={message.content}
+                      showAssistantActions={message.role === "assistant"}
+                      showRegenerate={index === latestAssistantIndex}
+                      onRegenerate={handleRegenerate}
+                      canRegenerate={canRegenerate}
                     />
                   ))
                 )}
