@@ -9,6 +9,7 @@ import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
 
 const STREAM_DELAY_MS = 14;
+const SERVICE_TOKEN_STORAGE_KEY = "chat-service-token";
 
 type ChatWindowProps = {
   initialConversationId: string;
@@ -30,6 +31,8 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
   );
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [serviceToken, setServiceToken] = useState("");
+  const [tokenTouched, setTokenTouched] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -37,6 +40,18 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
     setMessages([]);
     setLoading(false);
   }, [initialConversationId]);
+
+  useEffect(() => {
+    const storedToken = window.sessionStorage.getItem(SERVICE_TOKEN_STORAGE_KEY);
+
+    if (storedToken) {
+      setServiceToken(storedToken);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(SERVICE_TOKEN_STORAGE_KEY, serviceToken);
+  }, [serviceToken]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -86,6 +101,11 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
       return;
     }
 
+    if (!serviceToken.trim()) {
+      setTokenTouched(true);
+      return;
+    }
+
     setMessages((currentMessages) => [
       ...currentMessages,
       { role: "user", content: message },
@@ -93,7 +113,11 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
     setLoading(true);
 
     try {
-      const response = await sendChatMessage(message, conversationId);
+      const response = await sendChatMessage(
+        message,
+        serviceToken.trim(),
+        conversationId,
+      );
       await streamAssistantReply(response.reply);
       setConversationId(response.conversation_id);
     } catch {
@@ -133,6 +157,11 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
       return;
     }
 
+    if (!serviceToken.trim()) {
+      setTokenTouched(true);
+      return;
+    }
+
     const latestUserMessage = getLatestUserMessage();
 
     if (!latestUserMessage) {
@@ -156,7 +185,11 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
     setLoading(true);
 
     try {
-      const response = await sendChatMessage(latestUserMessage, conversationId);
+      const response = await sendChatMessage(
+        latestUserMessage,
+        serviceToken.trim(),
+        conversationId,
+      );
       await streamAssistantReply(response.reply);
       setConversationId(response.conversation_id);
     } catch {
@@ -181,6 +214,7 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
   }, -1);
 
   const canRegenerate = !loading && messages.some((message) => message.role === "user");
+  const hasServiceToken = Boolean(serviceToken.trim());
 
   function SidebarContent() {
     return (
@@ -212,6 +246,31 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
               </p>
               <p className="mt-2 break-all text-sm leading-6 text-zinc-300">
                 {conversationId}
+              </p>
+            </div>
+
+            <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <label
+                htmlFor="service-token"
+                className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500"
+              >
+                Service Token
+              </label>
+              <textarea
+                id="service-token"
+                value={serviceToken}
+                onChange={(event) => {
+                  setServiceToken(event.target.value);
+                  if (!tokenTouched) {
+                    setTokenTouched(true);
+                  }
+                }}
+                rows={3}
+                placeholder="Bearer <user-access-token>"
+                className="w-full resize-none rounded-xl border border-white/10 bg-[#0f1013] px-3 py-2 text-xs leading-5 text-zinc-200 outline-none placeholder:text-zinc-600 focus:border-zinc-400/70"
+              />
+              <p className="text-xs text-zinc-500">
+                Required for every chat request.
               </p>
             </div>
           </div>
@@ -275,6 +334,12 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
           </div>
         </div>
 
+        {!hasServiceToken && tokenTouched ? (
+          <div className="mx-auto mt-3 w-full max-w-4xl rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
+            Please set a valid service token in the sidebar before sending messages.
+          </div>
+        ) : null}
+
         <div className="min-h-0 flex-1 overflow-hidden px-4 py-4 md:px-8 md:py-6">
           <div className="mx-auto flex h-full w-full max-w-4xl min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#18191d] shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8">
@@ -290,9 +355,10 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
                       role={message.role}
                       content={message.content}
                       showAssistantActions={message.role === "assistant"}
+                      showUserActions={message.role === "user"}
                       showRegenerate={index === latestAssistantIndex}
                       onRegenerate={handleRegenerate}
-                      canRegenerate={canRegenerate}
+                      canRegenerate={canRegenerate && hasServiceToken}
                     />
                   ))
                 )}
@@ -305,7 +371,7 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
 
             <div className="border-t border-white/10 bg-[#18191d] px-4 py-4 md:px-6">
               <div className="mx-auto w-full max-w-3xl">
-                <ChatInput onSend={handleSend} />
+                <ChatInput onSend={handleSend} disabled={!hasServiceToken} />
               </div>
             </div>
           </div>

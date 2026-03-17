@@ -6,6 +6,7 @@ export interface ChatMessage {
 export interface ChatRequest {
   message: string;
   conversation_id?: string | null;
+  service_token: string;
 }
 
 export interface ChatResponse {

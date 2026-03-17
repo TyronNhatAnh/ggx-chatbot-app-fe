@@ -17,6 +17,13 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as ChatRequest;
 
+  if (!body.service_token?.trim()) {
+    return NextResponse.json(
+      { error: "service_token is required." },
+      { status: 400 },
+    );
+  }
+
   const response = await fetch(chatApiUrl, {
     method: "POST",
     headers: {
@@ -26,6 +33,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       message: body.message,
       conversation_id: body.conversation_id ?? null,
+      service_token: body.service_token,
     }),
     cache: "no-store",
   });

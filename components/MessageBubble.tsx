@@ -13,6 +13,7 @@ type MessageBubbleProps = {
   content: string;
   isTyping?: boolean;
   showAssistantActions?: boolean;
+  showUserActions?: boolean;
   showRegenerate?: boolean;
   onRegenerate?: () => void;
   canRegenerate?: boolean;
@@ -23,6 +24,7 @@ export function MessageBubble({
   content,
   isTyping = false,
   showAssistantActions = false,
+  showUserActions = false,
   showRegenerate = false,
   onRegenerate,
   canRegenerate = false,
@@ -50,6 +52,9 @@ export function MessageBubble({
       setCopied(false);
     }
   }
+
+  const iconButtonClass =
+    "inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div
@@ -82,7 +87,34 @@ export function MessageBubble({
         ) : null}
 
         {!isTyping && isUser ? (
-          <p className="whitespace-pre-wrap break-words">{content}</p>
+          <>
+            <p className="whitespace-pre-wrap break-words">{content}</p>
+
+            {showUserActions ? (
+              <div className="mt-3 flex justify-end border-t border-white/10 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCopyMessage}
+                  className={iconButtonClass}
+                  aria-label="Copy question"
+                  title="Copy question"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                    className="opacity-90"
+                  >
+                    <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                  <span>{copied ? "Copied" : "Copy"}</span>
+                </button>
+              </div>
+            ) : null}
+          </>
         ) : null}
 
         {!isTyping && !isUser ? (
@@ -192,9 +224,22 @@ export function MessageBubble({
                 <button
                   type="button"
                   onClick={handleCopyMessage}
-                  className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100"
+                  className={iconButtonClass}
+                  aria-label="Copy answer"
+                  title="Copy answer"
                 >
-                  {copied ? "Copied" : "Copy"}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                    className="opacity-90"
+                  >
+                    <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                  <span>{copied ? "Copied" : "Copy"}</span>
                 </button>
 
                 {showRegenerate && onRegenerate ? (
@@ -202,9 +247,22 @@ export function MessageBubble({
                     type="button"
                     onClick={onRegenerate}
                     disabled={!canRegenerate}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className={iconButtonClass}
+                    aria-label="Regenerate answer"
+                    title="Regenerate answer"
                   >
-                    Regenerate
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                      className="opacity-90"
+                    >
+                      <path d="M20 11a8 8 0 1 0 2 5.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path d="M20 4v7h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>Regenerate</span>
                   </button>
                 ) : null}
               </div>

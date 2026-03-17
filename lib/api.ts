@@ -4,11 +4,13 @@ const CHAT_API_URL = "/api/chat";
 
 export async function sendChatMessage(
   message: string,
+  serviceToken: string,
   conversationId?: string | null,
 ): Promise<ChatResponse> {
   const payload: ChatRequest = {
     message,
     conversation_id: conversationId,
+    service_token: serviceToken,
   };
 
   const response = await fetch(CHAT_API_URL, {

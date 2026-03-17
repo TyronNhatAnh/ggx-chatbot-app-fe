@@ -4,12 +4,17 @@ import { useState } from "react";
 
 type ChatInputProps = {
   onSend: (message: string) => void;
+  disabled?: boolean;
 };
 
-export function ChatInput({ onSend }: ChatInputProps) {
+export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   const [message, setMessage] = useState("");
 
   function handleSend() {
+    if (disabled) {
+      return;
+    }
+
     const trimmedMessage = message.trim();
 
     if (!trimmedMessage) {
@@ -26,19 +31,21 @@ export function ChatInput({ onSend }: ChatInputProps) {
         type="text"
         value={message}
         onChange={(event) => setMessage(event.target.value)}
+        disabled={disabled}
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             event.preventDefault();
             handleSend();
           }
         }}
-        placeholder="Type a message..."
-        className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+        placeholder={disabled ? "Set service token to start chat..." : "Type a message..."}
+        className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:text-zinc-500"
       />
       <button
         type="button"
         onClick={handleSend}
-        className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-white"
+        disabled={disabled}
+        className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
       >
         Send
       </button>
