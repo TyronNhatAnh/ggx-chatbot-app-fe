@@ -8,7 +8,6 @@ import type { ChatMessage } from "../types/chat";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
 
-const STREAM_DELAY_MS = 14;
 const SERVICE_TOKEN_STORAGE_KEY = "chat-service-token";
 
 type ChatWindowProps = {
@@ -58,42 +57,10 @@ export function ChatWindow({ initialConversationId }: ChatWindowProps) {
   }, [messages, loading]);
 
   async function streamAssistantReply(reply: string) {
-    const tokens = Array.from(reply);
-
     setMessages((currentMessages) => [
       ...currentMessages,
-      { role: "assistant", content: "" },
+      { role: "assistant", content: reply },
     ]);
-
-    if (tokens.length === 0) {
-      return;
-    }
-
-    for (const token of tokens) {
-      await new Promise<void>((resolve) => {
-        window.setTimeout(() => resolve(), STREAM_DELAY_MS);
-      });
-
-      setMessages((currentMessages) => {
-        if (currentMessages.length === 0) {
-          return currentMessages;
-        }
-
-        const lastMessage = currentMessages[currentMessages.length - 1];
-
-        if (lastMessage.role !== "assistant") {
-          return currentMessages;
-        }
-
-        const nextMessages = [...currentMessages];
-        nextMessages[nextMessages.length - 1] = {
-          ...lastMessage,
-          content: `${lastMessage.content}${token}`,
-        };
-
-        return nextMessages;
-      });
-    }
   }
 
   async function handleSend(message: string) {
