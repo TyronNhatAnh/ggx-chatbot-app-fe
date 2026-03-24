@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { MarkdownCodeBlock } from "./MarkdownCodeBlock";
 import type { ChatMessage } from "../types/chat";
+import { MarkdownCodeBlock } from "./MarkdownCodeBlock";
 
 type MessageBubbleProps = {
   role: ChatMessage["role"];
   content: string;
   isTyping?: boolean;
+  timestamp?: string;
   showAssistantActions?: boolean;
   showUserActions?: boolean;
   showRegenerate?: boolean;
@@ -23,6 +23,7 @@ export function MessageBubble({
   role,
   content,
   isTyping = false,
+  timestamp,
   showAssistantActions = false,
   showUserActions = false,
   showRegenerate = false,
@@ -54,23 +55,35 @@ export function MessageBubble({
   }
 
   const iconButtonClass =
-    "inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-lg border border-[#d9d4cb] bg-white px-2.5 py-1.5 text-xs font-medium text-[#625c53] transition-colors hover:bg-[#f8f5ef] hover:text-[#2a2621] disabled:cursor-not-allowed disabled:opacity-50";
+
+  const bubbleTimestamp =
+    timestamp ||
+    new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date());
 
   return (
     <div
       className={[
-        "message-enter flex w-full",
+        "message-enter flex w-full items-start gap-3",
         isUser ? "justify-end" : "justify-start",
       ].join(" ")}
     >
+      {!isUser ? (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#151412] text-sm font-bold text-[#f3d67f]">
+          AI
+        </div>
+      ) : null}
+
       <div
         className={[
-          "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm md:max-w-[78%]",
+          "max-w-[85%] md:max-w-[78%]",
           isUser
-            ? "bg-[#2b2d31] text-zinc-100"
-            : isTyping
-              ? "border border-white/10 bg-gradient-to-br from-[#202127] to-[#17181c] text-zinc-300 shadow-[0_12px_30px_rgba(0,0,0,0.25)]"
-              : "border border-white/8 bg-[#1f2026] text-zinc-200",
+            ? "rounded-2xl rounded-tr-sm bg-[#171513] px-6 py-4 text-[#f4efe7]"
+            : "rounded-3xl border border-[#d9d4cb] bg-[#f4f2ee] px-5 py-4 text-[#38342e]",
         ].join(" ")}
       >
         {isTyping ? (
@@ -80,18 +93,18 @@ export function MessageBubble({
               <span className="typing-dot" />
               <span className="typing-dot" />
             </div>
-            <span className="text-sm font-medium text-zinc-400">
-              AI is thinking...
-            </span>
+            <span className="text-sm font-medium text-[#7a7368]">AI is thinking...</span>
           </div>
         ) : null}
 
         {!isTyping && isUser ? (
           <>
-            <p className="whitespace-pre-wrap break-words">{content}</p>
+            <p className="whitespace-pre-wrap break-words text-[16px] leading-[1.6] md:text-[17px]">
+              {content}
+            </p>
 
             {showUserActions ? (
-              <div className="mt-3 flex justify-end border-t border-white/10 pt-2">
+              <div className="mt-3 flex justify-end border-t border-white/15 pt-2">
                 <button
                   type="button"
                   onClick={handleCopyMessage}
@@ -114,52 +127,44 @@ export function MessageBubble({
                 </button>
               </div>
             ) : null}
+
+            <p className="mt-2 text-right text-sm text-[#b8b1a6] md:text-base">{bubbleTimestamp}</p>
           </>
         ) : null}
 
         {!isTyping && !isUser ? (
-          <div className="markdown-body break-words text-[15px] leading-7 text-zinc-200">
+          <div className="markdown-body break-words text-[16px] leading-[1.7] text-[#3a352f] md:text-[17px]">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children }) => (
-                  <h1 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50 last:mb-0">
+                  <h1 className="mb-4 text-xl font-semibold tracking-tight text-[#1f1c17] last:mb-0">
                     {children}
                   </h1>
                 ),
                 h2: ({ children }) => (
-                  <h2 className="mb-3 text-lg font-semibold tracking-tight text-zinc-100 last:mb-0">
+                  <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#28231f] last:mb-0">
                     {children}
                   </h2>
                 ),
                 h3: ({ children }) => (
-                  <h3 className="mb-2 text-base font-semibold text-zinc-100 last:mb-0">
+                  <h3 className="mb-2 text-base font-semibold text-[#28231f] last:mb-0">
                     {children}
                   </h3>
                 ),
-                p: ({ children }) => (
-                  <p className="mb-4 last:mb-0">{children}</p>
-                ),
+                p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
                 ul: ({ children }) => (
-                  <ul className="mb-4 list-disc space-y-1.5 pl-5 last:mb-0">
-                    {children}
-                  </ul>
+                  <ul className="mb-4 list-disc space-y-1.5 pl-5 last:mb-0">{children}</ul>
                 ),
                 ol: ({ children }) => (
-                  <ol className="mb-4 list-decimal space-y-1.5 pl-5 last:mb-0">
-                    {children}
-                  </ol>
+                  <ol className="mb-4 list-decimal space-y-1.5 pl-5 last:mb-0">{children}</ol>
                 ),
                 li: ({ children }) => <li className="pl-1">{children}</li>,
-                strong: ({ children }) => (
-                  <strong className="font-semibold text-zinc-50">
-                    {children}
-                  </strong>
-                ),
+                strong: ({ children }) => <strong className="font-semibold text-[#1f1c17]">{children}</strong>,
                 a: ({ children, href }) => (
                   <a
                     href={href}
-                    className="font-medium text-zinc-200 underline decoration-zinc-500 underline-offset-4"
+                    className="font-medium text-[#2c2822] underline decoration-[#867f73] underline-offset-4"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -167,32 +172,26 @@ export function MessageBubble({
                   </a>
                 ),
                 blockquote: ({ children }) => (
-                  <blockquote className="mb-4 border-l-4 border-zinc-600 bg-white/[0.04] px-3 py-2 text-zinc-300 italic last:mb-0">
+                  <blockquote className="mb-4 border-l-4 border-[#b8b0a3] bg-[#ece7df] px-3 py-2 text-[#60594e] italic last:mb-0">
                     {children}
                   </blockquote>
                 ),
                 table: ({ children }) => (
-                  <div className="mb-4 overflow-x-auto rounded-2xl border border-white/10 bg-[#16171b] shadow-[0_8px_20px_rgba(0,0,0,0.22)] last:mb-0">
-                    <table className="min-w-full border-collapse text-left text-sm">
-                      {children}
-                    </table>
+                  <div className="mb-4 overflow-x-auto rounded-2xl border border-[#dad3c9] bg-[#f8f6f2] shadow-[0_8px_20px_rgba(0,0,0,0.1)] last:mb-0">
+                    <table className="min-w-full border-collapse text-left text-sm">{children}</table>
                   </div>
                 ),
-                thead: ({ children }) => (
-                  <thead className="bg-white/[0.04]">{children}</thead>
-                ),
+                thead: ({ children }) => <thead className="bg-[#f0ece5]">{children}</thead>,
                 th: ({ children }) => (
-                  <th className="border-b border-white/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                  <th className="border-b border-[#ddd6cb] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#7e776c]">
                     {children}
                   </th>
                 ),
                 tbody: ({ children }) => (
-                  <tbody className="[&_tr:nth-child(even)]:bg-white/[0.025]">
-                    {children}
-                  </tbody>
+                  <tbody className="[&_tr:nth-child(even)]:bg-[#f2eee8]">{children}</tbody>
                 ),
                 td: ({ children }) => (
-                  <td className="border-b border-white/8 px-4 py-2.5 align-top text-zinc-300 last:border-b-0">
+                  <td className="border-b border-[#e2dbd1] px-4 py-2.5 align-top text-[#555046] last:border-b-0">
                     {children}
                   </td>
                 ),
@@ -203,13 +202,11 @@ export function MessageBubble({
                   const codeText = String(children).replace(/\n$/, "");
 
                   if (isBlock) {
-                    return (
-                      <MarkdownCodeBlock code={codeText} language={language} />
-                    );
+                    return <MarkdownCodeBlock code={codeText} language={language} />;
                   }
 
                   return (
-                    <code className="rounded-md border border-white/10 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-zinc-100">
+                    <code className="rounded-md border border-[#d4cec3] bg-[#ece8e1] px-1.5 py-0.5 font-mono text-[0.85em] text-[#2e2923]">
                       {codeText}
                     </code>
                   );
@@ -220,7 +217,7 @@ export function MessageBubble({
             </ReactMarkdown>
 
             {showAssistantActions ? (
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#dad4ca] pt-3">
                 <button
                   type="button"
                   onClick={handleCopyMessage}
@@ -267,9 +264,17 @@ export function MessageBubble({
                 ) : null}
               </div>
             ) : null}
+
+            <p className="mt-2 text-sm text-[#b8b1a6] md:text-base">{bubbleTimestamp}</p>
           </div>
         ) : null}
       </div>
+
+      {isUser ? (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e1c068] text-sm font-semibold text-[#29251f]">
+          N
+        </div>
+      ) : null}
     </div>
   );
 }
