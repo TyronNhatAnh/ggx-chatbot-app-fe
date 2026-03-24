@@ -1,13 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #111214;
-  --foreground: #f5f5f5;
+  /* Radius */
+  --radius: 0.625rem;
+
+  /* Warm cream palette */
+  --background: #f2f0ec;
+  --foreground: #2d2a25;
+  --card: #f4f2ee;
+  --card-foreground: #38342e;
+  --popover: #f4f2ee;
+  --popover-foreground: #38342e;
+  --primary: #151412;
+  --primary-foreground: #e9c469;
+  --secondary: #f7f5f1;
+  --secondary-foreground: #2f2b26;
+  --muted: #f0ece5;
+  --muted-foreground: #8f8578;
+  --accent: #ece6dd;
+  --accent-foreground: #494338;
+  --destructive: #dc2626;
+  --border: #d5cec3;
+  --input: #d5cec3;
+  --ring: #151412;
+
+  /* Sidebar (dark) */
+  --sidebar: #171412;
+  --sidebar-foreground: #f2ede4;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-accent: #26201a;
+  --sidebar-accent-foreground: #e5c677;
 }
 
 @theme inline {
+  /* Map CSS variables → Tailwind utilities */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import type { ChatRequest, ChatResponse } from "../../../../types/chat";
+import type { ChatRequest, ChatResponse } from "@/types/chat";
 
 const DEFAULT_CHAT_API_URL = "http://localhost:8000/chat";
 
@@ -24,19 +24,27 @@ export async function POST(request: Request) {
     );
   }
 
-  const response = await fetch(chatApiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": chatApiKey,
-    },
-    body: JSON.stringify({
-      message: body.message,
-      conversation_id: body.conversation_id ?? null,
-      service_token: body.service_token,
-    }),
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(chatApiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": chatApiKey,
+      },
+      body: JSON.stringify({
+        message: body.message,
+        conversation_id: body.conversation_id ?? null,
+        service_token: body.service_token,
+      }),
+      cache: "no-store",
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Could not reach the backend service." },
+      { status: 503 },
+    );
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

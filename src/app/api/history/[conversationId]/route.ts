@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import type { HistoryDetailResponse } from "../../../../../types/chat";
+import type { HistoryDetailResponse } from "@/types/chat";
 
 function getBackendBase() {
   const chatUrl = process.env.CHAT_API_URL ?? "http://localhost:8000/chat";
@@ -21,13 +21,22 @@ export async function GET(
   }
 
   const { conversationId } = await params;
-  const response = await fetch(
-    `${getBackendBase()}/history/${conversationId}`,
-    {
-      headers: { "X-API-Key": chatApiKey },
-      cache: "no-store",
-    },
-  );
+
+  let response: Response;
+  try {
+    response = await fetch(
+      `${getBackendBase()}/history/${conversationId}`,
+      {
+        headers: { "X-API-Key": chatApiKey },
+        cache: "no-store",
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "Could not reach the backend service." },
+      { status: 503 },
+    );
+  }
 
   if (response.status === 404) {
     return NextResponse.json(

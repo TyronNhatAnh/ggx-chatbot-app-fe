@@ -1,4 +1,9 @@
-import type { ChatRequest, ChatResponse, HistoryDetailResponse, HistoryListResponse } from "../types/chat";
+import type {
+  ChatRequest,
+  ChatResponse,
+  HistoryDetailResponse,
+  HistoryListResponse,
+} from "@/types/chat";
 
 const CHAT_API_URL = "/api/chat";
 const HISTORY_API_URL = "/api/history";
@@ -16,9 +21,7 @@ export async function sendChatMessage(
 
   const response = await fetch(CHAT_API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
@@ -52,9 +55,7 @@ export async function fetchHistoryDetail(
     cache: "no-store",
   });
 
-  if (response.status === 404) {
-    return null;
-  }
+  if (response.status === 404) return null;
 
   if (!response.ok) {
     throw new Error("Failed to fetch conversation detail.");
