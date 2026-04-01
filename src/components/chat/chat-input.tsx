@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 type ChatInputProps = {
   onSend: (message: string) => void;
@@ -18,6 +17,18 @@ export function ChatInput({
   placeholder,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resize = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }, []);
+
+  useEffect(() => {
+    resize();
+  }, [message, resize]);
 
   function handleSend() {
     if (disabled) return;
@@ -25,17 +36,21 @@ export function ChatInput({
     if (!trimmed) return;
     onSend(trimmed);
     setMessage("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-secondary p-3">
-      <Input
-        type="text"
+    <div className="flex items-end gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
+      <textarea
+        ref={textareaRef}
+        rows={1}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         disabled={disabled}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSend();
           }
@@ -44,14 +59,16 @@ export function ChatInput({
           placeholder ??
           (disabled ? "Set service token to start chat..." : "Type a message...")
         }
-        className="flex-1 border-0 bg-transparent px-3 py-2 text-base text-foreground shadow-none focus-visible:ring-0 disabled:opacity-60"
+        className="flex-1 resize-none overflow-y-auto bg-transparent py-1 text-base text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
+        style={{ maxHeight: "200px" }}
       />
       <Button
         type="button"
         onClick={handleSend}
-        disabled={disabled}
+        disabled={disabled || !message.trim()}
         size="icon-lg"
         aria-label="Send message"
+        className="mb-0.5 shrink-0"
       >
         <SendHorizontal size={20} />
       </Button>
